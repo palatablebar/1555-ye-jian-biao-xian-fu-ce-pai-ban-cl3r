@@ -2881,5 +2881,268 @@
       "beads_g": 268,
       "surface_c": 24
     }
-  ]
+  ],
+  "maintenance": {
+    "target_decay": 25,
+    "closure_capacity": 1,
+    "training": [
+      {
+        "segment": "MT-1",
+        "action": "BEAD_REPLENISH",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.8,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-1",
+        "action": "DRY_RESCAN",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.5,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-1",
+        "action": "RESURFACE",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 10.8,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-2",
+        "action": "BEAD_REPLENISH",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.8,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-2",
+        "action": "DRY_RESCAN",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.5,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-2",
+        "action": "RESURFACE",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 10.8,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-3",
+        "action": "BEAD_REPLENISH",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.8,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-3",
+        "action": "DRY_RESCAN",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.5,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-3",
+        "action": "RESURFACE",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 10.8,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-4",
+        "action": "BEAD_REPLENISH",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.8,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-4",
+        "action": "DRY_RESCAN",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.5,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      },
+      {
+        "segment": "MT-4",
+        "action": "RESURFACE",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 10.8,
+        "day": 52,
+        "result_day": 58,
+        "received": 58,
+        "observed": true
+      }
+    ],
+    "calibration": [
+      {
+        "segment": "MC-1",
+        "action": "BEAD_REPLENISH",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.8,
+        "day": 60,
+        "result_day": 61,
+        "received": 61,
+        "observed": true
+      },
+      {
+        "segment": "MC-1",
+        "action": "DRY_RESCAN",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 0.5,
+        "day": 60,
+        "result_day": 61,
+        "received": 61,
+        "observed": true
+      },
+      {
+        "segment": "MC-1",
+        "action": "RESURFACE",
+        "measurements": {
+          "retro_cd": 200,
+          "age_days": 345,
+          "wet_pct": 31,
+          "traffic_k": 54,
+          "beads_g": 268,
+          "surface_c": 24
+        },
+        "reduction": 10.8,
+        "day": 60,
+        "result_day": 61,
+        "received": 61,
+        "observed": true
+      }
+    ]
+  }
 }

@@ -44,6 +44,14 @@
         <button type="submit" id="apply" disabled>复算安排</button>
       </form>
       <dl class="kpis" id="kpis" aria-label="本班摘要"></dl>
+      <section class="panel maintenance-panel" aria-labelledby="maintenance-title">
+        <div class="panel-head">
+          <h2 id="maintenance-title">联动推演 · 本班养护签发</h2>
+          <output id="maintenance-status" aria-live="polite"></output>
+        </div>
+        <p class="detail-note" id="maintenance-summary">正在读取养护联动方案</p>
+        <div id="maintenance-content" class="table-scroll"></div>
+      </section>
       <div class="desk-grid">
 <section class="panel presentation" aria-labelledby="visual-title">
   <div class="panel-head"><h2 id="visual-title">{{ display.visual }}</h2><span class="measure-unit">{{ display.unit }}</span></div>

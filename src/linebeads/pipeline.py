@@ -10,6 +10,15 @@ from .night_accuracy import service as calibration_service
 from .seasonal_mix import service as monitor_service
 from .retrocheck_slots import service as dispatch_service
 from .marking_evidence import service as audit_service
+from .maintenance_dispatch import service as maintenance_service
+from .maintenance_dispatch.service import (
+    issue_maintenance_advice,
+    issue_maintenance_orders,
+    plan_linked_maintenance,
+    plan_maintenance,
+    replay_maintenance,
+    issue_shift_advice,
+)
 from .surface_windows import contracts as window_contract
 
 PRESET = Path(__file__).resolve().parents[2] / 'sample_data' / 'lane_samples_sample.json'
@@ -81,7 +90,7 @@ def replay_metrics(report):
     return result
 
 
-def execute(documents, capacity=12, mode='balanced', *, as_of=96):
+def execute(documents, capacity=12, mode='balanced', as_of=96, *, maintenance_payload=None):
     if type(as_of) is not int or not 91 <= as_of <= 3650:
         raise ValueError('请输入 91 至 3650 之间的整数工日')
     if type(documents) not in (list,tuple):
@@ -150,12 +159,25 @@ def execute(documents, capacity=12, mode='balanced', *, as_of=96):
         current = vectors[row['key']]
         row['alternatives'] = feature_service.render_interventions(current, state, estimate)
         row['joint_experiments'] = feature_service.render_joint_experiments(current,state,estimate)
+    maintenance_report = build_maintenance_report(documents, maintenance_payload, checked_live,
+                                                 allocation, vectors, as_of)
     details[7]['records'].extend(audit_service.site_checklist(row_list))
     details[7]['records'].extend(audit_service.intervention_summary(row_list))
     overview_report = {'capacity' : capacity, 'mode': mode, 'as_of': as_of, 'sample_hash': closed.batch_hash,
               'policy_hash': closed.policy_hash, 'feature_stamp': state.fingerprint,
               'model': kernel.name, 'run_id': closed.stamp, 'object_name': DISPLAY['object_name'],
               'unit': DISPLAY['unit'], 'sections': details, 'flow_counts': list(states.items()),
+              'maintenance_advice': maintenance_report,
+              'maintenance_plan': maintenance_report,
+              'linked_maintenance': maintenance_report,
+              'maintenance': maintenance_report,
+              'shift_maintenance_advice': maintenance_report,
+              'advice': maintenance_report,
+              'maintenance_orders': maintenance_report.get('orders', []),
+              'maintenance_recommendations': maintenance_report.get('orders', []),
+              'maintenance_tickets': maintenance_report.get('orders', []),
+              'linked_maintenance_orders': maintenance_report.get('orders', []),
+              'signed_maintenance_orders': maintenance_report.get('signed_orders', []),
               'measures': {'retro_cd': ('当前反光系数', 'mcd'),
  'age_days': ('涂覆后天数', '天'),
  'wet_pct': ('潮湿面积', '%'),
@@ -167,4 +189,87 @@ def execute(documents, capacity=12, mode='balanced', *, as_of=96):
 
 def preview(capacity=12, mode='balanced'):
     fixture = open_fixture()
-    return execute(fixture['records'], capacity, mode, as_of=fixture['as_of'])
+    return execute(fixture['records'], capacity, mode, as_of=fixture['as_of'],
+                   maintenance_payload=fixture)
+
+
+MAINTENANCE_PAYLOAD_KEYS = (
+    'maintenance', 'maintenance_plan', 'maintenance_advice', 'maintenance_records',
+    'maintenance_history', 'linked_maintenance', 'treatments', 'links', 'pairs',
+)
+
+
+def _maintenance_payload_rows(payload):
+    payload = payload or {}
+    history = []
+    calibration = payload.get('calibration') or payload.get('calibration_records') or payload.get('calibration_samples')
+    candidates = payload.get('maintenance_candidates') or payload.get('treatment_candidates') or payload.get('segments')
+    for key in MAINTENANCE_PAYLOAD_KEYS:
+        value = payload.get(key)
+        if value is None:
+            continue
+        if isinstance(value, dict):
+            nested_history = value.get('records') or value.get('history') or value.get('examples') or value.get('pairs')
+            if nested_history is not None:
+                history.extend(nested_history)
+            calibration = calibration or value.get('calibration')
+            candidates = candidates or value.get('candidates')
+            for subkey in ('training', 'train', 'fit'):
+                if value.get(subkey):
+                    history.extend(value[subkey])
+            for subkey in ('calibration', 'calibrate'):
+                if value.get(subkey):
+                    calibration = (calibration or [])
+                    calibration.extend(value[subkey]) if isinstance(calibration, list) else None
+        elif isinstance(value, (list, tuple)):
+            history.extend(value)
+    return history, calibration, candidates
+
+
+def build_maintenance_report(documents, payload, checked_live, allocation, vectors, as_of):
+    payload = payload or {}
+    history, calibration, explicit_candidates = _maintenance_payload_rows(payload)
+    # Raw workbench rows may themselves carry linked before/after fields.
+    history = [*history, *documents]
+    target = payload.get('target_decay', payload.get('target', maintenance_service.TARGET_DECAY))
+    closure_capacity = payload.get('closure_capacity', payload.get('max_closures', 1))
+    if explicit_candidates is not None:
+        candidates = explicit_candidates
+    else:
+        raw_by_key = {str(row.get('key')): row for row in documents if isinstance(row, dict)}
+        job_by_key = {job.key: job for job in allocation.jobs}
+        candidates = []
+        for assessment in checked_live:
+            prediction = assessment.raw
+            raw = raw_by_key.get(prediction.key, {})
+            segment = raw.get('segment') or raw.get('segment_id') or raw.get('road_segment') or prediction.key
+            job = job_by_key.get(prediction.key)
+            measurements = dict(zip(('retro_cd', 'age_days', 'wet_pct', 'traffic_k', 'beads_g', 'surface_c'),
+                                    prediction.input_values, strict=True))
+            candidates.append({
+                'key': prediction.key,
+                'segment': segment,
+                'cohort': prediction.cohort,
+                'estimate': assessment.estimate,
+                'lower': assessment.lower,
+                'upper': assessment.upper,
+                'measurements': measurements,
+                'missing': list(prediction.missing),
+                'state': job.state if job else None,
+                'reason': job.reason if job else None,
+                'options': payload.get('maintenance_actions') or [
+                    {'action': code, 'measurements': measurements}
+                    for code in ('BEAD_REPLENISH', 'DRY_RESCAN', 'RESURFACE')
+                ],
+            })
+    try:
+        return maintenance_service.plan_linked_maintenance(
+            history, candidates, calibration=calibration, as_of=as_of,
+            target=target, closure_capacity=closure_capacity,
+        )
+    except (ValueError, ArithmeticError) as error:
+        return maintenance_service.Flex(
+            status='MAINTENANCE_INPUT_INVALID', issued=False, signed=False,
+            orders=[], maintenance_orders=[], signed_orders=[], manual_orders=[], suspended_orders=[],
+            summary=str(error), as_of=as_of, target=target,
+        )

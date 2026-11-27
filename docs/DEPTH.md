@@ -16,6 +16,7 @@ AI/ML · 传统ML · 中型
 | M6 | 季节分组 | 差异定位和外推审查 | `src/linebeads/seasonal_mix/service.py` | `tests/test_seasonal_mix.py` |
 | M7 | 复测工位 | 硬规则与额度分配 | `src/linebeads/retrocheck_slots/service.py` | `tests/test_retrocheck_slots.py` |
 | M8 | 标线留证 | 单据及额度证据 | `src/linebeads/marking_evidence/service.py` | `tests/test_marking_evidence.py` |
+| M9 | 联动养护签发 | 同路段降幅学习、异路段校准、封路优先级 | `src/linebeads/maintenance_dispatch/service.py` | 联动养护签发回归 |
 
 ## 深度登记
 
@@ -30,3 +31,6 @@ AI/ML · 传统ML · 中型
 | TRAP-44 | 校准样本不足 | 分派前转人工判读并保留原因 | `src/linebeads/night_accuracy/service.py` | `tests/test_night_accuracy.py::test_empty_calibration_requires_review` |
 | TRAP-53 | 单条推断与混批 | 复用冻结参数，各条估计完全一致 | `src/linebeads/bead_kernel/service.py` | `tests/test_bead_kernel.py::test_input_batch_invariance` |
 | TRAP-54 | 特征版本与模型不配对 | 拒绝继续推断并要求重拟合 | `src/linebeads/bead_kernel/service.py` | `tests/test_bead_kernel.py::test_mismatched_model_input_version_fails` |
+| TRAP-61 | 校准路段混入拟合路段 | 只保留未参与拟合的路段；无样本则暂停签发 | `src/linebeads/maintenance_dispatch/service.py` | 联动养护签发回归 |
+| TRAP-62 | 晚到养护实绩越过回放截止日 | 按 `as_of` 成熟度过滤，旧建议保持不变 | `src/linebeads/maintenance_dispatch/service.py` | 联动养护签发回归 |
+| TRAP-63 | 多个封路候选与换序输入 | 只签一个区间上界最低的封路段，排序和指纹确定 | `src/linebeads/maintenance_dispatch/service.py` | 联动养护签发回归 |

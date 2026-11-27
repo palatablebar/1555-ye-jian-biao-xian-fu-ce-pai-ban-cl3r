@@ -63,3 +63,18 @@
 ### 标线干面对照单
 
 同路段、近龄期且留有完整实测值的干面点可以做对照。潮湿测点先保留读数，低反光、少投珠和车流高的复测安排分别记录。 在派发环节展开现场安排，或从关联单据回查实际读数。
+
+## 联动养护签发
+
+联动养护单使用同一路段 `segment`（或 `segment_id`、`road_segment`、`cohort`）的养护前、养护后成熟实绩学习衰减降幅。成对记录可直接给 `before_outcome`/`after_outcome`（或 `reduction`），也可用相同 `pair_id`/`link_id` 加 `phase: before|after` 的两条事件表示。只有 `result_day <= as_of`、`received <= as_of` 且未截尾的实绩可进入当时回放；晚到结果会被截止日过滤，不能改写旧建议。
+
+校准样本必须来自未参与拟合的路段；与拟合路段重号的校准记录会被剔除。没有未见过的联动校准样本时，方案状态为 `CALIBRATION_SUSPENDED`，单据为 `暂停签发 / MISSING_LINKED_CALIBRATION`。
+
+签发策略固定为：
+
+1. 实测湿滑并已暂停（`WET_LOW_LIGHT` 等湿滑硬规则）的单保持 `暂停`，不转成养护动作。
+2. 少占道动作的衰减区间上界能确认 `upper <= target_decay`（默认 `25`）时，优先签发少占道动作。
+3. 没有少占道达标动作时，才允许封路复铺；本班 `closure_capacity=1`，在候选路段中按区间上界最低、安全余量最大选择一段。
+4. 没有可信区间确认达标的动作转 `人工判读 / NO_QUALIFIED_TREATMENT`；封路名额不足的其他路段转人工。
+
+结果位于 `maintenance_advice`，其 `orders`/`signed_orders` 中可查 `养护动作`、`action`、`interval`、`decay_interval`、`预计衰减区间` 和降幅区间。`GET /api/linebeads/maintenance-orders/<order_id>` 可按签发单号回查。`/api/linebeads/run` 也接受顶层 `maintenance`、`maintenance_records`、`calibration`、`maintenance_candidates` 等自备字段。

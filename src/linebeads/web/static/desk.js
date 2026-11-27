@@ -83,6 +83,18 @@ function renderMeasurements(card, row) {
     const operations = node('dl',undefined,'record-fields');
     for (const [name,value] of row.operations) operations.append(node('dt',name),node('dd',value));
     card.append(node('h3','作业量计算','inner-heading'),operations);
+    const maintenanceOrder = ledger?.maintenance_advice?.orders?.find(order => order.key === currentItem.key);
+    if (maintenanceOrder) {
+        const advice = maintenanceOrder;
+        card.append(node('h3','本班养护签发','inner-heading'));
+        const issue = node('dl',undefined,'record-fields');
+        const interval = advice.interval_text || (advice.upper === null || advice.upper === undefined ? '缺少可信区间' : `${format.format(advice.lower)}–${format.format(advice.upper)}`);
+        issue.append(node('dt','养护动作'),node('dd',advice['养护动作'] || advice.maintenance_action || '—'));
+        issue.append(node('dt','预计衰减区间'),node('dd',interval));
+        issue.append(node('dt','签发状态'),node('dd',`${advice.state} · ${advice.reason}`));
+        issue.append(node('dt','处理依据'),node('dd',advice.evidence || '—'));
+        card.append(issue);
+    }
     if (row.joint_experiments.length) {
         const joint = node('details',undefined,'rejected');
         joint.append(node('summary','联动推演'));
@@ -150,10 +162,43 @@ function showQueue() {
     if (!ledger) return;
     const sought = byId('filter').value.trim().toLocaleLowerCase('zh-CN');
     const state = byId('status-filter').value;
-    const rows = ledger.rows.filter(item => (!state || item.state === state) &&
-          (!sought || [item.key,item.zone,item.reason,item.evidence].some(text => text.toLocaleLowerCase('zh-CN').includes(sought))));
+    const rows = ledger.rows.filter(item => {
+        const maintenance = ledger.maintenance_advice?.orders?.find(order => order.key === item.key);
+        return (!state || item.state === state) &&
+          (!sought || [item.key,item.zone,item.reason,item.evidence,
+              maintenance?.order_id,maintenance?.['养护动作'],maintenance?.action,maintenance?.reason]
+            .some(text => text !== undefined && text !== null && String(text).toLocaleLowerCase('zh-CN').includes(sought)));
+    });
     byId('row-count').textContent = `${rows.length}/${ledger.rows.length} 条`;
     byId('work-rows').replaceChildren(rows.length ? rowsTable(rows,visibleOrder,{labels:order,choose:inspect}) : node('p','当前条件下没有匹配单据','empty'));
+}
+
+function renderMaintenance(data) {
+    const panel = data.maintenance_advice || data.maintenance_plan;
+    const target = byId('maintenance-content');
+    if (!target) return;
+    target.replaceChildren();
+    if (!panel) {
+        byId('maintenance-summary').textContent = '本批没有联动养护签发结果';
+        return;
+    }
+    byId('maintenance-status').textContent = `${panel.status || panel.state || ''} · 封路 ${panel.closure_count ?? 0} 段`;
+    byId('maintenance-summary').textContent = panel.summary || '';
+    const orders = panel.orders || panel.maintenance_orders || [];
+    const entries = orders.map(order => ({
+        签发单号:order.order_id,
+        关联单据:order.key,
+        路段:order.segment,
+        养护动作:order['养护动作'] || order.maintenance_action || '—',
+        预计衰减区间:order.interval_text || (order.upper === null || order.upper === undefined ? '区间不足，不能确认达标' : valueOf(order.lower)+'–'+valueOf(order.upper)),
+        状态:order.state,
+        原因码:order.reason,
+        处理依据:order.evidence,
+    }));
+    showTables(target, entries, {linkKey:'关联单据', choose: record => {
+        const ticket = ledger.rows.find(item => item.key === record['关联单据']);
+        if (ticket) inspect(ticket);
+    }});
 }
 
 function redraw(data) {
@@ -162,6 +207,7 @@ function redraw(data) {
     byId('stamp').textContent = data.run_id;
     byId('capacity').value = data.capacity;
     byId('mode').value = data.mode;
+    renderMaintenance(data);
     byId('kpis').replaceChildren(...data.metrics.map(item => {
         const result = node('div',undefined,'kpi');
         result.append(node('dt',item.label),node('dd',item.value));

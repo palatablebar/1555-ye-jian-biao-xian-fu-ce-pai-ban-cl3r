@@ -62,6 +62,10 @@ input, select { border: 1px solid var(--line); border-radius: min(7px, var(--rad
 .depots .kpi dd { margin: 8px 0 0; font: 650 clamp(18px, 2.36vw, 44px)/1 var(--font-num); color: var(--ink); }
 .kpi dd, td, code, output { font-variant-numeric: tabular-nums; }
 .depots .desk-grid { display: grid; gap: var(--gap); grid-template-columns: minmax(0, 1.38fr) minmax(0, 1fr); align-items: start; }
+.maintenance-panel { margin: 0 0 var(--gap); }
+.maintenance-panel .table-scroll { max-height: 260px; }
+.state[data-state=已签发] { color: #27634a; border-color: currentColor; }
+.state[data-state=人工判读], .state[data-state=暂停签发] { color: #8a5a16; border-color: currentColor; }
 .depots .panel { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 32px; }
 .presentation { grid-area: visual; }
 .queue { grid-area: queue; }
